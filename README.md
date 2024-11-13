@@ -43,6 +43,17 @@ SecureWebApp é uma aplicação web segura construída com Spring Boot, focada e
 
 8. **SecureWebAppApplication**: Ponto de entrada da aplicação Spring Boot.
 
+## Autenticação
+
+O sistema de autenticação foi implementado com os seguintes componentes:
+
+- DTOs para registro, login e resposta de autenticação
+- AuthService para lógica de autenticação e registro
+- AuthController com endpoints para registro (/api/auth/signup) e login (/api/auth/signin)
+- Configuração de segurança atualizada para permitir acesso aos endpoints de autenticação
+
+Próximos passos incluem a implementação de um filtro JWT para processar tokens em requisições autenticadas.
+
 ## Tecnologias Utilizadas
 
 - Spring Boot 3.3.5
