@@ -1,59 +1,71 @@
 # SecureWebApp
 
-## Objetivo do Projeto
+## Visão Geral do Projeto
 
-Desenvolver uma aplicação web segura que implemente autenticação stateless com tokens JWT, autorização de usuários e integração com um provedor OAuth para login. O sistema deve armazenar credenciais de forma segura e gerenciar a validade e revogação de tokens.
+SecureWebApp é uma aplicação web segura construída com Spring Boot, focada em implementar autenticação e autorização robustas usando JWT (JSON Web Tokens).
 
-## Requisitos Funcionais
+## Estrutura do Projeto
 
-1. **Autenticação:**
-   - Fluxo de autenticação stateless utilizando JWT.
-   - Usuários se autenticam com e-mail e senha.
-   - Token JWT é devolvido após autenticação bem-sucedida.
+### Configuração
 
-2. **Autorização:**
-   - Implementação de guards de navegação no cliente.
-   - Uso de gates ou policies no servidor para controle de permissões.
+1. **SecurityConfig**: Configura as regras de segurança da aplicação.
+   - Define endpoints públicos e protegidos
+   - Configura o encoder de senha
 
-3. **Armazenamento Seguro de Credenciais:**
-   - Uso de hash seguro (bcrypt) para armazenar senhas.
+2. **application.properties**: Contém configurações cruciais do projeto.
+   - Configurações do banco de dados
+   - Configurações do JWT (chave secreta e tempo de expiração)
 
-4. **Manuseio de Tokens:**
-   - Gestão da validade e revogação de tokens.
+### Modelo de Dados
 
-5. **OAuth 2.0:**
-   - Integração com provedor OAuth (Google ou Facebook).
+3. **User**: Entidade JPA que representa um usuário no sistema.
+   - Armazena informações como id, username, password e roles
+
+### Repositório
+
+4. **UserRepository**: Interface para operações de banco de dados relacionadas aos usuários.
+   - Métodos para buscar usuários por username
+
+### Segurança
+
+5. **JwtTokenProvider**: Responsável pela geração, validação e parsing de tokens JWT.
+   - Gera tokens JWT para usuários autenticados
+   - Valida tokens JWT recebidos
+   - Extrai informações do usuário do token
+
+6. **UserPrincipal**: Implementação de UserDetails do Spring Security.
+   - Encapsula informações do usuário para autenticação e autorização
+
+7. **CustomUserDetailsService**: Implementação de UserDetailsService do Spring Security.
+   - Carrega detalhes do usuário para autenticação
+
+### Aplicação Principal
+
+8. **SecureWebAppApplication**: Ponto de entrada da aplicação Spring Boot.
 
 ## Tecnologias Utilizadas
 
-- **Backend:**
-  - Java 23
-  - Spring Boot 3
-  - Spring Security
-  - JWT para autenticação
-  - OAuth 2.0 para autorização
-  - Bcrypt para hashing de senhas
+- Spring Boot 3.3.5
+- Spring Security
+- JSON Web Tokens (JWT)
+- JPA / Hibernate
+- MySQL
 
-- **Frontend:**
-  - Framework de sua escolha (ex.: React, Angular, Vue.js)
-  - Estilização criativa e responsiva
+## Configuração do Banco de Dados
 
-## Estrutura de Pastas
-SecureWebApp/ │ ├── backend/ │ ├── src/ │ │ ├── main/ │ │ │ ├── java/com/example/securewebapp/ │ │ │ ├── resources/ │ │ │ └── application.properties │ │ └── test/ │ └── build.gradle │ ├── frontend/ │ ├── src/ │ └── package.json │ └── README.md
+O projeto utiliza MySQL como banco de dados. Um schema chamado `securewebapp` foi criado para armazenar as tabelas da aplicação.
 
+## Como Executar
 
-## Configurações e Comandos
+1. Certifique-se de ter o JDK 23 e o MySQL instalados
+2. Configure as credenciais do banco de dados no `application.properties`
+3. Execute `./gradlew bootRun` (Linux/Mac) ou `gradlew.bat bootRun` (Windows)
 
-1. **Premissas:**
-   - Java 23 instalado.
-   - Gradle ou Maven para gerenciamento de dependências.
-   - Node.js e npm/yarn para o frontend.
+## Contribuição
 
-2. **Iniciar o Backend:**
-   - Navegue para a pasta `backend`.
-   - Execute `./gradlew bootRun` ou `mvn spring-boot:run`.
-
-3. **Iniciar o Frontend:**
-   - Navegue para a pasta `frontend`.
-   - Execute `npm install` ou `yarn install` para instalar dependências.
-   - Execute `npm start` ou `yarn start` para iniciar o servidor de desenvolvimento.
+Para contribuir com o projeto, por favor:
+1. Faça um fork do repositório
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Faça commit das suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
