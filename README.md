@@ -54,6 +54,16 @@ O sistema de autenticação foi implementado com os seguintes componentes:
 
 Próximos passos incluem a implementação de um filtro JWT para processar tokens em requisições autenticadas.
 
+## Autenticação JWT
+
+Um filtro de autenticação JWT foi implementado para processar tokens em requisições autenticadas. Isso inclui:
+
+- JwtAuthenticationFilter para extrair e validar tokens JWT de requisições
+- Atualização do CustomUserDetailsService para carregar usuários por ID
+- Configuração de segurança atualizada para incluir o filtro JWT
+
+O próximo passo será criar endpoints protegidos para testar a autenticação.
+
 ## Tecnologias Utilizadas
 
 - Spring Boot 3.3.5
