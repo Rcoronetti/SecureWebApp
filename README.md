@@ -64,6 +64,17 @@ Um filtro de autenticação JWT foi implementado para processar tokens em requis
 
 O próximo passo será criar endpoints protegidos para testar a autenticação.
 
+## Endpoints Protegidos
+
+Foram adicionados endpoints protegidos para testar a autenticação JWT:
+
+- GET `/api/user/me`: Retorna os detalhes do usuário atualmente autenticado
+- GET `/api/user/hello`: Retorna uma mensagem de saudação para usuários autenticados
+
+Para acessar estes endpoints, é necessário incluir o token JWT no header "Authorization" das requisições, com o prefixo "Bearer ".
+
+Próximos passos incluem a implementação de autorização baseada em roles e o desenvolvimento do frontend da aplicação.
+
 ## Tecnologias Utilizadas
 
 - Spring Boot 3.3.5

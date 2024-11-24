@@ -17,10 +17,11 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
-        if (authService.registerUser(registerRequest.getUsername(), registerRequest.getPassword())) {
-            return ResponseEntity.ok("User registered successfully");
+        if (authService.registerUser(registerRequest.getUsername(), registerRequest.getEmail(),
+                registerRequest.getPassword())) {
+            return ResponseEntity.ok("Usuario registrado com suscesso");
         } else {
-            return ResponseEntity.badRequest().body("Username is already taken");
+            return ResponseEntity.badRequest().body("Username ou email já está em uso");
         }
     }
 
@@ -28,5 +29,15 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         String jwt = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
         return ResponseEntity.ok(new AuthResponse(jwt));
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testEndpoint() {
+        return ResponseEntity.ok("Teste de endpoint");
+    }
+
+    @GetMapping("/api/user/profile")
+    public ResponseEntity<String> getUserProfile() {
+        return ResponseEntity.ok("Dados do usuário");
     }
 }

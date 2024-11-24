@@ -37,13 +37,14 @@ public class AuthService {
         return tokenProvider.generateToken(authentication);
     }
 
-    public boolean registerUser(String username, String password) {
-        if (userRepository.existsByUsername(username)) {
+    public boolean registerUser(String username, String email, String password) {
+        if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
             return false;
         }
 
         User user = new User();
         user.setUsername(username);
+        user.setEmail(password);
         user.setPassword(passwordEncoder.encode(password));
         user.setRoles(Collections.singleton("ROLE_USER"));
 
