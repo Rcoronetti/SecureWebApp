@@ -28,13 +28,21 @@ public class AuthService {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
+    @Autowired
+    private SecurityLogService securityLogService;
+
     public String authenticateUser(String username, String password) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        return tokenProvider.generateToken(authentication);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = tokenProvider.generateToken(authentication);
+            securityLogService.logLoginAttempt(username, true);
+            return jwt;
+        } catch (Exception e) {
+            securityLogService.logLoginAttempt(username, false);
+            throw e;
+        }
     }
 
     public boolean registerUser(String username, String email, String password) {

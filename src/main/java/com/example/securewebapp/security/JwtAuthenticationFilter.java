@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.securewebapp.service.TokenService;
 
 import com.example.securewebapp.service.CustomUserDetailsService;
+import com.example.securewebapp.service.SecurityLogService;
 
 import java.io.IOException;
 
@@ -27,6 +28,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private SecurityLogService securityLogService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -43,9 +47,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                securityLogService.logUnauthorizedAccess(request.getRequestURI(), request.getRemoteAddr());
             }
         } catch (Exception ex) {
-            logger.error("Não foi possível configurar a autenticação do usuário no contexto de segurança", ex);
+            securityLogService.logUnauthorizedAccess(request.getRequestURI(), request.getRemoteAddr());
+            logger.error("Could not set user authentication in security context", ex);
         }
 
         filterChain.doFilter(request, response);
