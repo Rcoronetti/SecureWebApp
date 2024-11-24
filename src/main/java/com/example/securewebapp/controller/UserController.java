@@ -4,6 +4,7 @@ import com.example.securewebapp.model.User;
 import com.example.securewebapp.repository.UserRepository;
 import com.example.securewebapp.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,5 +26,10 @@ public class UserController {
     @GetMapping("/hello")
     public String hello() {
         return "Oi, usuário autenticado!";
+    }
+
+    @GetMapping("/api/user/profile")
+    public ResponseEntity<String> getUserProfile() {
+        return ResponseEntity.ok("Dados do usuário");
     }
 }
