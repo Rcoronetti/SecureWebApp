@@ -63,6 +63,7 @@ public class AuthService {
 
         if (refreshToken.equals(user.getRefreshToken()) && tokenProvider.validateToken(refreshToken)) {
             String newToken = tokenProvider.generateToken(userId);
+            securityLogService.logRefreshToken(user.getUsername());
             return newToken;
         } else {
             throw new RuntimeException("Invalid refresh token");

@@ -27,4 +27,8 @@ public class SecurityLogService {
     public void logUnauthorizedAccess(String endpoint, String ipAddress) {
         logger.warn("Tentativa de acesso não autorizada para {} do IP: {}", endpoint, ipAddress);
     }
+
+    public void logRefreshToken(String username) {
+        logger.info("Sucesso na atualização de token para o usuário: {}", username);
+    }
 }
