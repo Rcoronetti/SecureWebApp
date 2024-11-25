@@ -3,7 +3,9 @@ package com.example.securewebapp.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,6 +36,9 @@ public class User {
     private boolean emailVerified = false;
     private String emailVerificationToken;
     private LocalDateTime emailVerificationTokenExpiry;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Token> tokens = new ArrayList<>();
 
     @JsonIgnore
     private String refreshToken;

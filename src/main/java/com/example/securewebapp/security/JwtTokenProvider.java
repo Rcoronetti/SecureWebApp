@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import com.example.securewebapp.model.Token;
 import com.example.securewebapp.repository.TokenRepository;
 
 import org.slf4j.Logger;
@@ -80,11 +81,10 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(authToken);
-            return true;
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            return !tokenRepository.findByTokenValue(authToken)
+                    .map(Token::isRevoked)
+                    .orElse(true);
         } catch (SignatureException ex) {
             logger.error("Assinatura JWT inválida");
         } catch (MalformedJwtException ex) {

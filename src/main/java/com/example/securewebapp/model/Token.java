@@ -10,40 +10,19 @@ public class Token {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String tokenValue;
 
-    @Enumerated(EnumType.STRING)
-    private TokenType tokenType;
-
-    @Column(nullable = false)
     private boolean revoked;
 
-    @Column(nullable = false)
     private Instant expiryDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    public enum TokenType {
-        ACESSO,
-        ATUALIZACAO
-    }
-
-    // Construtores
-    public Token() {
-    }
-
-    public Token(String tokenValue, TokenType tokenType, boolean revoked, Instant expiryDate, User user) {
-        this.tokenValue = tokenValue;
-        this.tokenType = tokenType;
-        this.revoked = revoked;
-        this.expiryDate = expiryDate;
-        this.user = user;
-    }
-
     // Getters e Setters
+
     public Long getId() {
         return id;
     }
@@ -58,14 +37,6 @@ public class Token {
 
     public void setTokenValue(String tokenValue) {
         this.tokenValue = tokenValue;
-    }
-
-    public TokenType getTokenType() {
-        return tokenType;
-    }
-
-    public void setTokenType(TokenType tokenType) {
-        this.tokenType = tokenType;
     }
 
     public boolean isRevoked() {
@@ -90,17 +61,5 @@ public class Token {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    @Override
-    public String toString() {
-        return "Token{" +
-                "id=" + id +
-                ", tokenValue='" + tokenValue + '\'' +
-                ", tokenType=" + tokenType +
-                ", revoked=" + revoked +
-                ", expiryDate=" + expiryDate +
-                ", userId=" + (user != null ? user.getId() : null) +
-                '}';
     }
 }
