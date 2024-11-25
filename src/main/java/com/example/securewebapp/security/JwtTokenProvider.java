@@ -3,9 +3,16 @@ package com.example.securewebapp.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+
+import com.example.securewebapp.repository.TokenRepository;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -13,6 +20,10 @@ import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     @Value("${app.jwtSecret}")
     private String jwtSecret;
@@ -75,12 +86,23 @@ public class JwtTokenProvider {
                     .parseClaimsJws(authToken);
             return true;
         } catch (SignatureException ex) {
+            logger.error("Assinatura JWT inválida");
         } catch (MalformedJwtException ex) {
+            logger.error("Token JWT inválido");
         } catch (ExpiredJwtException ex) {
+            logger.error("Token JWT expirado");
         } catch (UnsupportedJwtException ex) {
+            logger.error("Token JWT não suportado");
         } catch (IllegalArgumentException ex) {
-
+            logger.error("Sequência de declarações JWT vazia");
         }
         return false;
+    }
+
+    public void revokeToken(String tokenValue) {
+        tokenRepository.findByTokenValue(tokenValue).ifPresent(token -> {
+            token.setRevoked(true);
+            tokenRepository.save(token);
+        });
     }
 }

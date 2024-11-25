@@ -22,9 +22,6 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
-    private TokenService tokenService;
-
-    @Autowired
     private SecurityLogService securityLogService;
 
     @PostMapping("/signup")
@@ -62,10 +59,9 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String token, HttpServletRequest request) {
         if (token != null && token.startsWith("Bearer ")) {
-            String jwt = token.substring(7);
-            tokenService.blacklistToken(jwt);
+            String authToken = token.substring(7);
+            authService.logout(authToken);
             securityLogService.logLogout(request.getUserPrincipal().getName());
-            securityLogService.logTokenBlacklisted(jwt);
             return ResponseEntity.ok("Logout realizado com sucesso");
         }
         return ResponseEntity.badRequest().body("Token inválido");

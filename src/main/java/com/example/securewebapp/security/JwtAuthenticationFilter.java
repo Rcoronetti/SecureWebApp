@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (jwt != null && tokenProvider.validateToken(jwt) && !tokenService.isTokenBlacklisted(jwt)) {
+            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt) && !tokenService.isTokenBlacklisted(jwt)) {
                 Long userId = tokenProvider.getUserIdFromJWT(jwt);
 
                 UserDetails userDetails = customUserDetailsService.loadUserById(userId);
@@ -47,12 +47,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                securityLogService.logUnauthorizedAccess(request.getRequestURI(), request.getRemoteAddr());
             }
         } catch (Exception ex) {
             securityLogService.logUnauthorizedAccess(request.getRequestURI(), request.getRemoteAddr());
-            logger.error("Could not set user authentication in security context", ex);
+            logger.error("Não foi possível definir a autenticação do usuário no contexto de segurança", ex);
         }
 
         filterChain.doFilter(request, response);

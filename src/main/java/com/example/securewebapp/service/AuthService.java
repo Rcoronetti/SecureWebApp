@@ -24,6 +24,9 @@ import java.util.UUID;
 public class AuthService {
 
     @Autowired
+    private TokenService tokenService;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
@@ -58,12 +61,6 @@ public class AuthService {
             // Se a autenticação for bem-sucedida, procede com a geração de tokens
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
-            String refreshToken = tokenProvider
-                    .generateRefreshToken(((UserPrincipal) authentication.getPrincipal()).getId());
-
-            // Atualiza o refresh token do usuário
-            user.setRefreshToken(refreshToken);
-            userRepository.save(user);
 
             // Registra a tentativa de login bem-sucedida
             securityLogService.logLoginAttempt(username, true);
@@ -185,5 +182,9 @@ public class AuthService {
         message.setSubject("Teste de E-mail");
         message.setText("Este é um e-mail de teste da aplicação Spring Boot.");
         mailSender.send(message);
+    }
+
+    public void logout(String authToken) {
+        tokenService.blacklistToken(authToken);
     }
 }
