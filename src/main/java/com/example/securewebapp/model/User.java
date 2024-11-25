@@ -31,6 +31,9 @@ public class User {
     private Set<String> roles = new HashSet<>();
     private String passwordResetToken;
     private LocalDateTime passwordResetTokenExpiry;
+    private boolean emailVerified = false;
+    private String emailVerificationToken;
+    private LocalDateTime emailVerificationTokenExpiry;
 
     @JsonIgnore
     private String refreshToken;
@@ -99,5 +102,29 @@ public class User {
 
     public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
         this.passwordResetTokenExpiry = passwordResetTokenExpiry;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getEmailVerificationToken() {
+        return emailVerificationToken;
+    }
+
+    public void setEmailVerificationToken(String emailVerificationToken) {
+        this.emailVerificationToken = emailVerificationToken;
+    }
+
+    public LocalDateTime getEmailVerificationTokenExpiry() {
+        return emailVerificationTokenExpiry;
+    }
+
+    public void setEmailVerificationTokenExpiry(LocalDateTime emailVerificationTokenExpiry) {
+        this.emailVerificationTokenExpiry = emailVerificationTokenExpiry;
     }
 }

@@ -43,42 +43,63 @@ public class AuthService {
 
     public String authenticateUser(String username, String password) {
         try {
+            // verifica se o usuário existe e se o e-mail foi verificado
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+            if (!user.isEmailVerified()) {
+                throw new RuntimeException("Por favor, verifique seu e-mail antes de fazer login");
+            }
+
+            // Tenta autenticar o usuário
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password));
+
+            // Se a autenticação for bem-sucedida, procede com a geração de tokens
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
             String refreshToken = tokenProvider
                     .generateRefreshToken(((UserPrincipal) authentication.getPrincipal()).getId());
 
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            // Atualiza o refresh token do usuário
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
 
+            // Registra a tentativa de login bem-sucedida
             securityLogService.logLoginAttempt(username, true);
+
             return jwt;
         } catch (Exception e) {
+            // Registra a tentativa de login mal-sucedida
             securityLogService.logLoginAttempt(username, false);
-            throw e;
+
+            // Se a exceção foi devido a e-mail não verificado, lança essa exceção
+            // específica
+            if (e.getMessage().contains("verifique seu e-mail")) {
+                throw new RuntimeException("Por favor, verifique seu e-mail antes de fazer login", e);
+            }
+
+            // Para outras exceções, lança uma mensagem genérica de erro de autenticação
+            throw new RuntimeException("Falha na autenticação. Verifique suas credenciais.", e);
         }
     }
 
     public String refreshToken(String refreshToken) {
         Long userId = tokenProvider.getUserIdFromJWT(refreshToken);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         if (refreshToken.equals(user.getRefreshToken()) && tokenProvider.validateToken(refreshToken)) {
             String newToken = tokenProvider.generateToken(userId);
             securityLogService.logRefreshToken(user.getUsername());
             return newToken;
         } else {
-            throw new RuntimeException("Invalid refresh token");
+            throw new RuntimeException("Atualização de token inválida");
         }
     }
 
     public boolean registerUser(String username, String email, String password) {
-        if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
+        if (userRepository.findByUsername(username).isPresent() || userRepository.findByEmail(email).isPresent()) {
             return false;
         }
 
@@ -86,15 +107,30 @@ public class AuthService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        user.setRoles(new HashSet<>(Collections.singletonList("USER")));
-
+        user.setEmailVerificationToken(generateVerificationToken());
+        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
         userRepository.save(user);
+
+        sendVerificationEmail(user.getEmail(), user.getEmailVerificationToken());
         return true;
+    }
+
+    private String generateVerificationToken() {
+        return UUID.randomUUID().toString();
+    }
+
+    private void sendVerificationEmail(String email, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("verifique seu e-mail");
+        message.setText("Por favor, clique no link abaixo para verificar seu email :\n"
+                + "http://localhost:8080/api/auth/verify-email?token=" + token);
+        mailSender.send(message);
     }
 
     public void initiatePasswordReset(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         String token = generatePasswordResetToken();
         user.setPasswordResetToken(token);
@@ -108,17 +144,33 @@ public class AuthService {
         return UUID.randomUUID().toString();
     }
 
+    public boolean verifyEmail(String token) {
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException("Token de verificação inválido"));
+
+        if (user.getEmailVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token de verificação expirado");
+        }
+
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiry(null);
+        userRepository.save(user);
+
+        return true;
+    }
+
     private void sendPasswordResetEmail(String email, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("Password Reset Request");
-        message.setText("To reset your password, click the link: http://localhost:8080/reset-password?token=" + token);
+        message.setSubject("Redefinição de senha solicitada");
+        message.setText("Para resetar sua senha, clique no link: http://localhost:8080/reset-password?token=" + token);
         mailSender.send(message);
     }
 
     public void resetPassword(String token, String newPassword) {
         User user = userRepository.findByPasswordResetTokenAndPasswordResetTokenExpiryAfter(token, LocalDateTime.now())
-                .orElseThrow(() -> new RuntimeException("Invalid or expired password reset token"));
+                .orElseThrow(() -> new RuntimeException("Token de redefinição de senha inválido ou expirado"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setPasswordResetToken(null);

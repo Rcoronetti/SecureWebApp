@@ -31,9 +31,20 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         if (authService.registerUser(registerRequest.getUsername(), registerRequest.getEmail(),
                 registerRequest.getPassword())) {
-            return ResponseEntity.ok("Usuário registrado com suscesso");
+            return ResponseEntity
+                    .ok("Usuário registrado com sucesso. Por favor, cheque seu email para verificar sua conta.");
         } else {
-            return ResponseEntity.badRequest().body("Username ou email já está em uso");
+            return ResponseEntity.badRequest().body("Username ou e-mail já cadastrado");
+        }
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        try {
+            authService.verifyEmail(token);
+            return ResponseEntity.ok("Email verificado com sucesso");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -55,9 +66,9 @@ public class AuthController {
             tokenService.blacklistToken(jwt);
             securityLogService.logLogout(request.getUserPrincipal().getName());
             securityLogService.logTokenBlacklisted(jwt);
-            return ResponseEntity.ok("Logout successful");
+            return ResponseEntity.ok("Logout realizado com sucesso");
         }
-        return ResponseEntity.badRequest().body("Invalid token");
+        return ResponseEntity.badRequest().body("Token inválido");
     }
 
     @PostMapping("/refresh")
@@ -84,7 +95,7 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestBody PasswordResetRequest request) {
         try {
             authService.resetPassword(token, request.getNewPassword());
-            return ResponseEntity.ok("Password reset successful");
+            return ResponseEntity.ok("Redefinição de senha realizada com sucesso");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
