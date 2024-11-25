@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.example.securewebapp.service.SecurityLogService;
@@ -15,8 +17,11 @@ import com.example.securewebapp.service.SecurityLogService;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class RateLimitFilter implements Filter {
 
     @Autowired
@@ -24,11 +29,22 @@ public class RateLimitFilter implements Filter {
 
     private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
+    private static final Logger logger = LoggerFactory.getLogger(RateLimitFilter.class);
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+        String path = httpRequest.getRequestURI();
+
+        logger.info("Requisição recebida para o path: {}", path);
+
+        if (isStaticResource(path)) {
+            logger.info("Recurso estático detectado, ignorando limite de taxa para: {}", path);
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
 
         String ipAddress = getClientIP(httpRequest);
         Bucket bucket = buckets.computeIfAbsent(ipAddress, this::newBucket);
@@ -42,9 +58,18 @@ public class RateLimitFilter implements Filter {
         }
     }
 
+    private boolean isStaticResource(String path) {
+        return path.startsWith("/css/") ||
+                path.startsWith("/js/") ||
+                path.equals("/") ||
+                path.equals("/index.html") ||
+                path.equals("/login.html") ||
+                path.equals("/register.html");
+    }
+
     private Bucket newBucket(String ip) {
         return Bucket.builder()
-                .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
+                .addLimit(Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1))))
                 .build();
     }
 
