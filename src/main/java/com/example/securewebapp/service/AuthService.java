@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashSet;
 
 @Service
 public class AuthService {
@@ -52,9 +53,9 @@ public class AuthService {
 
         User user = new User();
         user.setUsername(username);
-        user.setEmail(password);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        user.setRoles(Collections.singleton("ROLE_USER"));
+        user.setRoles(new HashSet<>(Collections.singletonList("USER")));
 
         userRepository.save(user);
         return true;
