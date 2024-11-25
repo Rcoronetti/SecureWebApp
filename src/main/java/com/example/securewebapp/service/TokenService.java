@@ -6,9 +6,6 @@ import org.springframework.stereotype.Service;
 import com.example.securewebapp.model.Token;
 import com.example.securewebapp.repository.TokenRepository;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Service
 public class TokenService {
     @Autowired

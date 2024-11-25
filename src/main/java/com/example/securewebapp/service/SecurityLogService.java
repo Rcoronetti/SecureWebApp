@@ -31,4 +31,8 @@ public class SecurityLogService {
     public void logRefreshToken(String username) {
         logger.info("Sucesso na atualização de token para o usuário: {}", username);
     }
+
+    public void logRateLimitExceeded(String ipAddress) {
+        logger.warn("Limite de taxa excedido para o IP: {}", ipAddress);
+    }
 }
