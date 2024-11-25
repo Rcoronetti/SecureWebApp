@@ -2,6 +2,7 @@ package com.example.securewebapp.controller;
 
 import com.example.securewebapp.dto.AuthResponse;
 import com.example.securewebapp.dto.LoginRequest;
+import com.example.securewebapp.dto.PasswordResetRequest;
 import com.example.securewebapp.dto.RegisterRequest;
 import com.example.securewebapp.service.AuthService;
 import com.example.securewebapp.service.SecurityLogService;
@@ -66,6 +67,37 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(token));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody PasswordResetRequest request) {
+        try {
+            authService.initiatePasswordReset(request.getEmail());
+            return ResponseEntity.ok("Password reset email sent");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestBody PasswordResetRequest request) {
+        try {
+            authService.resetPassword(token, request.getNewPassword());
+            return ResponseEntity.ok("Password reset successful");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Endpoint de teste para envio de e-mail
+    @GetMapping("/test-email")
+    public ResponseEntity<?> testEmail() {
+        try {
+            authService.testEmail();
+            return ResponseEntity.ok("Test email sent successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to send test email: " + e.getMessage());
         }
     }
 }
