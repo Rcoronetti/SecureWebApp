@@ -47,11 +47,6 @@ public class AuthController {
         return ResponseEntity.ok("Teste de endpoint");
     }
 
-    @GetMapping("/api/user/profile")
-    public ResponseEntity<String> getUserProfile() {
-        return ResponseEntity.ok("Dados do usuário");
-    }
-
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String token, HttpServletRequest request) {
         if (token != null && token.startsWith("Bearer ")) {
