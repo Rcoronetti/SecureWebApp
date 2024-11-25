@@ -5,7 +5,7 @@ import com.example.securewebapp.dto.LoginRequest;
 import com.example.securewebapp.dto.RegisterRequest;
 import com.example.securewebapp.service.AuthService;
 import com.example.securewebapp.service.SecurityLogService;
-
+import com.example.securewebapp.dto.RefreshTokenRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,5 +62,11 @@ public class AuthController {
             return ResponseEntity.ok("Logout successful");
         }
         return ResponseEntity.badRequest().body("Invalid token");
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        String token = authService.refreshToken(refreshTokenRequest.getRefreshToken());
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 }

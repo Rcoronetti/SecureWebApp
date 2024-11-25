@@ -28,6 +28,9 @@ public class User {
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
 
+    @JsonIgnore
+    private String refreshToken;
+
     // Getters and setters
 
     public Long getId() {
@@ -68,5 +71,13 @@ public class User {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

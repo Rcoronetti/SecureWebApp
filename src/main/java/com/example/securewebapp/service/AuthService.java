@@ -3,6 +3,8 @@ package com.example.securewebapp.service;
 import com.example.securewebapp.model.User;
 import com.example.securewebapp.repository.UserRepository;
 import com.example.securewebapp.security.JwtTokenProvider;
+import com.example.securewebapp.security.UserPrincipal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,11 +40,32 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(username, password));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
+            String refreshToken = tokenProvider
+                    .generateRefreshToken(((UserPrincipal) authentication.getPrincipal()).getId());
+
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
+
             securityLogService.logLoginAttempt(username, true);
             return jwt;
         } catch (Exception e) {
             securityLogService.logLoginAttempt(username, false);
             throw e;
+        }
+    }
+
+    public String refreshToken(String refreshToken) {
+        Long userId = tokenProvider.getUserIdFromJWT(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (refreshToken.equals(user.getRefreshToken()) && tokenProvider.validateToken(refreshToken)) {
+            String newToken = tokenProvider.generateToken(userId);
+            return newToken;
+        } else {
+            throw new RuntimeException("Invalid refresh token");
         }
     }
 
