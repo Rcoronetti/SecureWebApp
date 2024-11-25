@@ -74,7 +74,7 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword(@RequestBody PasswordResetRequest request) {
         try {
             authService.initiatePasswordReset(request.getEmail());
-            return ResponseEntity.ok("Password reset email sent");
+            return ResponseEntity.ok("E-mail de redefinição de senha enviado com sucesso");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -95,9 +95,9 @@ public class AuthController {
     public ResponseEntity<?> testEmail() {
         try {
             authService.testEmail();
-            return ResponseEntity.ok("Test email sent successfully");
+            return ResponseEntity.ok("teste de e-mail enviado com sucesso");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to send test email: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Falha no envio do email: " + e.getMessage());
         }
     }
 }
