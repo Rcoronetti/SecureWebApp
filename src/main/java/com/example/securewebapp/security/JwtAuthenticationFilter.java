@@ -12,12 +12,14 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.securewebapp.service.TokenService;
+import org.springframework.stereotype.Component;
 
 import com.example.securewebapp.service.CustomUserDetailsService;
 import com.example.securewebapp.service.SecurityLogService;
 
 import java.io.IOException;
 
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
