@@ -5,6 +5,8 @@ import com.example.securewebapp.repository.UserRepository;
 import com.example.securewebapp.security.JwtTokenProvider;
 import com.example.securewebapp.security.UserPrincipal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -22,6 +24,7 @@ import java.util.UUID;
 
 @Service
 public class AuthService {
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     @Autowired
     private TokenService tokenService;
@@ -46,37 +49,41 @@ public class AuthService {
 
     public String authenticateUser(String username, String password) {
         try {
-            // verifica se o usuário existe e se o e-mail foi verificado
+            logger.info("Iniciando autenticação para o usuário: {}", username);
+
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                    .orElseThrow(() -> {
+                        logger.error("Usuário não encontrado: {}", username);
+                        return new RuntimeException("Usuário não encontrado");
+                    });
+
+            logger.info("Usuário encontrado: {}, Email verificado: {}", username, user.isEmailVerified());
 
             if (!user.isEmailVerified()) {
+                logger.warn("Tentativa de login com e-mail não verificado: {}", username);
                 throw new RuntimeException("Por favor, verifique seu e-mail antes de fazer login");
             }
 
-            // Tenta autenticar o usuário
+            logger.info("Tentando autenticar o usuário: {}", username);
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password));
 
-            // Se a autenticação for bem-sucedida, procede com a geração de tokens
+            logger.info("Autenticação bem-sucedida para o usuário: {}", username);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
 
-            // Registra a tentativa de login bem-sucedida
             securityLogService.logLoginAttempt(username, true);
+            logger.info("Token JWT gerado com sucesso para o usuário: {}", username);
 
             return jwt;
         } catch (Exception e) {
-            // Registra a tentativa de login mal-sucedida
+            logger.error("Erro durante a autenticação do usuário: {}", username, e);
             securityLogService.logLoginAttempt(username, false);
 
-            // Se a exceção foi devido a e-mail não verificado, lança essa exceção
-            // específica
             if (e.getMessage().contains("verifique seu e-mail")) {
                 throw new RuntimeException("Por favor, verifique seu e-mail antes de fazer login", e);
             }
 
-            // Para outras exceções, lança uma mensagem genérica de erro de autenticação
             throw new RuntimeException("Falha na autenticação. Verifique suas credenciais.", e);
         }
     }

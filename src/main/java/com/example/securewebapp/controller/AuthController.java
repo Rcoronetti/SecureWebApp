@@ -63,9 +63,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
+            logger.info("Tentativa de login para o usuário: {}", loginRequest.getUsername());
             String jwt = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+            logger.info("Login bem-sucedido para o usuário: {}", loginRequest.getUsername());
             return ResponseEntity.ok(new AuthResponse(jwt));
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
+            logger.error("Erro no login para o usuário: {}", loginRequest.getUsername(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }

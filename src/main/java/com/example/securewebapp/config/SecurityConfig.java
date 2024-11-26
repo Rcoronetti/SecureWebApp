@@ -1,10 +1,13 @@
 package com.example.securewebapp.config;
 
 import com.example.securewebapp.security.JwtAuthenticationFilter;
+import com.example.securewebapp.security.JwtTokenProvider;
 import com.example.securewebapp.security.RateLimitFilter;
 
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +30,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
+
     @Autowired
     private RateLimitFilter rateLimitFilter;
 
@@ -43,8 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/css/**", "/js/**")
                         .permitAll()
-                        .requestMatchers("/api/auth/register", "/api/auth/signin").permitAll() // Adicionado
-                                                                                               // "/api/auth/register"
+                        .requestMatchers("/api/auth/register", "/api/auth/signin").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/user/**").hasRole("USER")
@@ -81,6 +85,8 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        logger.info("PasswordEncoder configurado: {}", encoder.getClass().getSimpleName());
+        return encoder;
     }
 }
