@@ -47,8 +47,8 @@ SecureWebApp é uma aplicação web segura construída com Spring Boot, focada e
 ### Controladores
 
 9. **AuthController**: Gerencia endpoints de autenticação.
-   - `/api/auth/signup`: Registro de novos usuários
-   - `/api/auth/signin`: Login de usuários
+   - `/api/auth/register`: Registro de novos usuários
+   - `/api/auth/login`: Login de usuários
 
 10. **UserController**: Gerencia endpoints relacionados ao usuário.
     - `/api/user/info`: Retorna informações do usuário autenticado
