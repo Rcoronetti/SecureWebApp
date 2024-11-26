@@ -4,6 +4,7 @@ import com.example.securewebapp.dto.AuthResponse;
 import com.example.securewebapp.dto.LoginRequest;
 import com.example.securewebapp.dto.PasswordResetRequest;
 import com.example.securewebapp.dto.RegisterRequest;
+import com.example.securewebapp.security.JwtTokenProvider;
 import com.example.securewebapp.service.AuthService;
 import com.example.securewebapp.service.SecurityLogService;
 import com.example.securewebapp.dto.RefreshTokenRequest;
@@ -12,11 +13,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.securewebapp.service.TokenService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     @Autowired
     private AuthService authService;
@@ -24,14 +30,22 @@ public class AuthController {
     @Autowired
     private SecurityLogService securityLogService;
 
-    @PostMapping("/signup")
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
-        if (authService.registerUser(registerRequest.getUsername(), registerRequest.getEmail(),
-                registerRequest.getPassword())) {
-            return ResponseEntity
-                    .ok("Usuário registrado com sucesso. Por favor, cheque seu email para verificar sua conta.");
-        } else {
-            return ResponseEntity.badRequest().body("Username ou e-mail já cadastrado");
+        logger.info("Recebida requisição de registro para o usuário: {}", registerRequest.getUsername());
+        try {
+            if (authService.registerUser(registerRequest.getUsername(), registerRequest.getEmail(),
+                    registerRequest.getPassword())) {
+                logger.info("Usuário registrado com sucesso: {}", registerRequest.getUsername());
+                return ResponseEntity
+                        .ok("Usuário registrado com sucesso. Por favor, cheque seu email para verificar sua conta.");
+            } else {
+                logger.warn("Falha no registro do usuário: {}", registerRequest.getUsername());
+                return ResponseEntity.badRequest().body("Username ou e-mail já cadastrado");
+            }
+        } catch (Exception e) {
+            logger.error("Erro ao registrar usuário: {}", registerRequest.getUsername(), e);
+            return ResponseEntity.badRequest().body("Erro ao registrar usuário: " + e.getMessage());
         }
     }
 
@@ -45,7 +59,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/signin")
+    @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         String jwt = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
         return ResponseEntity.ok(new AuthResponse(jwt));

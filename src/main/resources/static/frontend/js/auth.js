@@ -1,3 +1,5 @@
+import * as api from './api.js';
+
 function setToken(token) {
     localStorage.setItem('token', token);
 }
@@ -23,12 +25,13 @@ async function login(username, password) {
 
 async function register(username, email, password) {
     try {
-        await api.register(username, email, password);
+        const response = await api.register(username, email, password);
+        console.log('Resposta do registro:', response);
         alert('Registro bem-sucedido! Por favor, faça login.');
         window.location.href = 'login.html';
     } catch (error) {
         console.error('Erro no registro:', error);
-        alert('Falha no registro. Tente novamente.');
+        alert(`Falha no registro: ${error.message}`);
     }
 }
 

@@ -96,20 +96,26 @@ public class AuthService {
     }
 
     public boolean registerUser(String username, String email, String password) {
-        if (userRepository.findByUsername(username).isPresent() || userRepository.findByEmail(email).isPresent()) {
-            return false;
+        try {
+            if (userRepository.findByUsername(username).isPresent() || userRepository.findByEmail(email).isPresent()) {
+                return false;
+            }
+
+            User user = new User();
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setEmailVerificationToken(generateVerificationToken());
+            user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
+            user.setRoles(new HashSet<>(Collections.singletonList("USER")));
+            userRepository.save(user);
+
+            sendVerificationEmail(user.getEmail(), user.getEmailVerificationToken());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao registrar usuário", e);
         }
-
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setEmailVerificationToken(generateVerificationToken());
-        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
-        userRepository.save(user);
-
-        sendVerificationEmail(user.getEmail(), user.getEmailVerificationToken());
-        return true;
     }
 
     private String generateVerificationToken() {

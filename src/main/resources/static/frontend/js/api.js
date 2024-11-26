@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 async function apiCall(endpoint, method = 'GET', body = null, token = null) {
     const headers = {
@@ -15,15 +15,21 @@ async function apiCall(endpoint, method = 'GET', body = null, token = null) {
         body: body ? JSON.stringify(body) : null
     });
 
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    const responseData = await response.text();
+    let parsedData;
+    try {
+        parsedData = JSON.parse(responseData);
+    } catch (e) {
+        parsedData = responseData;
     }
 
-    return await response.json();
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}, message: ${parsedData}`);
+    }
+
+    return parsedData;
 }
 
-const api = {
-    login: (username, password) => apiCall('/auth/login', 'POST', { username, password }),
-    register: (username, email, password) => apiCall('/auth/register', 'POST', { username, email, password }),
-    getUserInfo: (token) => apiCall('/user/info', 'GET', null, token)
-};
+export const login = (username, password) => apiCall('/auth/login', 'POST', { username, password });
+export const register = (username, email, password) => apiCall('/auth/register', 'POST', { username, email, password });
+export const getUserInfo = (token) => apiCall('/user/info', 'GET', null, token);
