@@ -9,6 +9,7 @@ import com.example.securewebapp.service.AuthService;
 import com.example.securewebapp.service.SecurityLogService;
 import com.example.securewebapp.dto.RefreshTokenRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.securewebapp.service.TokenService;
@@ -61,8 +62,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        String jwt = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
-        return ResponseEntity.ok(new AuthResponse(jwt));
+        try {
+            String jwt = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+            return ResponseEntity.ok(new AuthResponse(jwt));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
     }
 
     @GetMapping("/test")
